@@ -3,7 +3,7 @@
 import sys
 import common
 
-    
+
 if __name__ == '__main__':
     # www.miit.gov.cn
     target = "202.106.121.6"

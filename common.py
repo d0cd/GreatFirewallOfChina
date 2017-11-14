@@ -157,8 +157,28 @@ class PacketUtils:
     # "LIVE" if teh server is alive,
     # "FIREWALL" if it is behind the Great Firewall
     def ping(self, target):
-        # self.send_msg([triggerfetch], dst=target, syn=True)
-        return "NEED TO IMPLEMENT"
+        srcp = random.randint(2000, 30000)
+        x = random.randint(1, 31313131)
+        self.dst = target
+        # Send TCP SYN
+        self.send_pkt(flags=0x02, sport=srcp, seq=x)
+        # Wait for response
+        response = self.get_pkt()
+        if reseponse == None:
+            return "DEAD"
+        if response[TCP].flags != 0x12: #Do we need to check the ack?
+            return "This packet is not the one we are looking for"
+        # Send TCP ACK
+        y = response[TCP].seq
+        self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
+        # Send payload
+        self.send_pkt(payload=triggerfetch, sport=srcp, seq=x+1, ack=y+1)
+        # Wait for response
+        response = self.get_pkt()
+        if response[TCP].flags == 0x04:
+            return "FIREWALL"
+        else:
+            return "LIVE" #Do we need to check the response packet for a valid response?
 
     # Format is
     # ([], [])
