@@ -192,4 +192,37 @@ class PacketUtils:
     # The second list is T/F 
     # if there is a RST back for that particular request
     def traceroute(self, target, hops):
-        return "NEED TO IMPLEMENT"
+        self.dst = target
+        conn, response = self.TCPHandshake(target)
+        if(!conn):
+            return (None, [F])
+        RstArray = []
+        IPArray = []
+        for i in range(hops):
+            for p in self.packetQueue:
+                if(isICMP(p)):
+                    #do the 4 TCP handshakes
+                    self.TCPHandshake(target)
+                    self.TCPHandshake(target, datattl=hops-i)
+                    self.TCPHandshake(target, datattl=hops-i)
+                    self.TCPHandshake(target, datattl=hops-i)
+        return (IPArray, RstArray)
+
+    def TCPHandshake(self, target, datattl=32):
+        self.dst = target
+        x = random.randint(1, 31313131)
+        self.send_pkt(flags=0x02, seq=x)
+        if response == None:
+            return (False, response)
+        response = self.get_pkt()
+        y = response[TCP].seq
+        self.send_pkt(flags=0x10, seq=x+1, ack=y)
+        self.send_pkt(flags=0x10, seq=x+1, ack=y+1, payload=triggerfetch, ttl=datattl)
+        oop = True
+        while loop:
+            response = self.get_pkt()
+            if (response[TCP].flags == 0x12):
+                self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
+            else:
+                loop = False
+        return (True, response)
