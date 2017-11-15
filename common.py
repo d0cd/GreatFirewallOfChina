@@ -14,7 +14,7 @@ maxhop = 25
 # A request that will trigger the great firewall but will NOT cause
 # the web server to process the connection.  You probably want it here
 
-triggerfetch = """YOU MIGHT WANT SOMETHING HERE"""
+triggerfetch = "GET / HTTP/1.0\nHost: www.google.com\n\n"
 
 # A couple useful functions that take scapy packets
 def isRST(p):
@@ -138,7 +138,7 @@ class PacketUtils:
     def run_sniffer(self):
         sys.stderr.write("Sniffer started\n")
         rule = "src net %s or icmp" % self.dst
-        sys.stderr.write("Sniffer rule \"%s\"\n" % rule);
+        sys.stderr.write("Sniffer rule \"%s\"\n" % rule)
         sniff(prn=self.sniffer,
               filter=rule,
               iface=self.iface,
@@ -164,20 +164,25 @@ class PacketUtils:
         self.send_pkt(flags=0x02, sport=srcp, seq=x)
         # Wait for response
         response = self.get_pkt()
-        if reseponse == None:
+        if response == None:
             return "DEAD"
-        if response[TCP].flags != 0x12: #Do we need to check the ack?
-            return "This packet is not the one we are looking for"
         # Send TCP ACK
         y = response[TCP].seq
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
         # Send payload
-        self.send_pkt(payload=triggerfetch, sport=srcp, seq=x+1, ack=y+1)
+        self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
         # Wait for response
-        response = self.get_pkt()
-        if response[TCP].flags == 0x04:
+        loop = True
+        while loop:
+            response = self.get_pkt()
+            if (response[TCP].flags == 0x12):
+                self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
+            else:
+                loop = False
+        if isRST(response):
             return "FIREWALL"
         else:
+            print(response[TCP].flags == 0x12)
             return "LIVE" #Do we need to check the response packet for a valid response?
 
     # Format is
