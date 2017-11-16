@@ -203,20 +203,20 @@ class PacketUtils:
         IPArray = []
         i =0
         while True:
-            conn, response = self.TCPHandshake(target)
+            conn, response = self.TCPHandshake(target, 32)
             conn1, response1 = self.TCPHandshake(target, ttl)
             conn2, response2 = self.TCPHandshake(target, ttl)
             conn3, response3 = self.TCPHandshake(target, ttl)
-            if (isRST(response1) || isRST(response2) || isRST(response3)):
+            if ((response1 != None and isRST(response1)) or (response2 != None and isRST(response2)) or (response3 != None and isRST(response3))):
                 RstArray[i] = True
-            if (isICMP(response1) || isICMP(response2) || isICMP(response3)):
-                if(isTimeExceeded(response1):
+            if ((response1 != None and isICMP(response1)) or (response2 != None and isICMP(response2)) or (response3 != None and isICMP(response3))):
+                if(response1 != None and isTimeExceeded(response1)):
                     RstArray[i] = False
                     IPArray[i] = response1[IP].src
-                elif (isTimeExceeded(response2)):
+                elif (response2 != None and isTimeExceeded(response2)):
                     RstArray[i] = False
                     IPArray[i] = response2[IP].src
-                elif (isTimeExceeded(response3)):
+                elif (response2 != None and isTimeExceeded(response3)):
                     RstArray[i] = False
                     IPArray[i] = response3[IP].src
                 else:
@@ -228,13 +228,16 @@ class PacketUtils:
             self.packetQueue = Queue.Queue(100000)
         return (IPArray, RstArray)
 
-    def TCPHandshake(self, target, datattl=32):
+    def TCPHandshake(self, target, datattl):
         self.dst = target
         x = random.randint(1, 31313131)
         self.send_pkt(flags=0x02, seq=x)
+        response = self.get_pkt()
         if response == None:
             return (False, response)
         response = self.get_pkt()
+        if response == None:
+            return (False, response)
         y = response[TCP].seq
         self.send_pkt(flags=0x10, seq=x+1, ack=y)
         self.send_pkt(flags=0x10, seq=x+1, ack=y+1, payload=triggerfetch, ttl=datattl)
