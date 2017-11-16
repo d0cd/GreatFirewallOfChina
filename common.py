@@ -8,6 +8,7 @@ import socket
 import json
 import Queue
 import interfaces
+import logging
 
 maxhop = 25
 
@@ -198,29 +199,38 @@ class PacketUtils:
 
     def traceroute(self, target, hops):
         self.dst = target
+        x = random.randint(1, 31313131)
+        self.send_pkt(flags=0x02, seq=x)
+        response = self.get_pkt()
+        if response == None:
+            return ([None], [False])
+        y = response[TCP].seq
+        self.send_pkt(flags=0x10, seq=x+1, ack=y)
         ttl = 1
         RstArray = []
         IPArray = []
         i =0
         while True:
-            conn, response = self.TCPHandshake(target, 32)
-            conn1, response1 = self.TCPHandshake(target, ttl)
-            conn2, response2 = self.TCPHandshake(target, ttl)
-            conn3, response3 = self.TCPHandshake(target, ttl)
+            self.send_pkt(payload=triggerfetch, ttl=ttl)
+            response1 = self.get_pkt()
+            self.send_pkt(payload=triggerfetch, ttl=ttl)
+            response2 = self.get_pkt()
+            self.send_pkt(payload=triggerfetch, ttl=ttl)
+            response3 = self.get_pkt()
             if ((response1 != None and isRST(response1)) or (response2 != None and isRST(response2)) or (response3 != None and isRST(response3))):
-                RstArray[i] = True
+                RstArray.append(True)
             if ((response1 != None and isICMP(response1)) or (response2 != None and isICMP(response2)) or (response3 != None and isICMP(response3))):
                 if(response1 != None and isTimeExceeded(response1)):
-                    RstArray[i] = False
-                    IPArray[i] = response1[IP].src
+                    RstArray.append(False)
+                    IPArray.append(response1[IP].src)
                 elif (response2 != None and isTimeExceeded(response2)):
-                    RstArray[i] = False
-                    IPArray[i] = response2[IP].src
+                    RstArray.append(False)
+                    IPArray.append(response2[IP].src)
                 elif (response2 != None and isTimeExceeded(response3)):
-                    RstArray[i] = False
-                    IPArray[i] = response3[IP].src
+                    RstArray.append(False)
+                    IPArray.append(response3[IP].src)
                 else:
-                    RstArray[i] = False
+                    RstArray.append(False)
             ttl += 1
             i += 1
             if ttl > hops:
