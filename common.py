@@ -191,21 +191,41 @@ class PacketUtils:
     # or none if none
     # The second list is T/F 
     # if there is a RST back for that particular request
+
+    #start with ttl 1. increment till hops
+    # USE TCP Handshake, if any of the responses are an RST or timeExpired second array is true
+    # Empty queue after every hop
+
     def traceroute(self, target, hops):
         self.dst = target
-        conn, response = self.TCPHandshake(target)
-        if(!conn):
-            return (None, [F])
+        ttl = 1
         RstArray = []
         IPArray = []
-        for i in range(hops):
-            for p in self.packetQueue:
-                if(isICMP(p)):
-                    #do the 4 TCP handshakes
-                    self.TCPHandshake(target)
-                    self.TCPHandshake(target, datattl=hops-i)
-                    self.TCPHandshake(target, datattl=hops-i)
-                    self.TCPHandshake(target, datattl=hops-i)
+        i =0
+        while True:
+            conn, response = self.TCPHandshake(target)
+            conn1, response1 = self.TCPHandshake(target, ttl)
+            conn2, response2 = self.TCPHandshake(target, ttl)
+            conn3, response3 = self.TCPHandshake(target, ttl)
+            if (isRST(response1) || isRST(response2) || isRST(response3)):
+                RstArray[i] = True
+            if (isICMP(response1) || isICMP(response2) || isICMP(response3)):
+                if(isTimeExceeded(response1):
+                    RstArray[i] = False
+                    IPArray[i] = response1[IP].src
+                elif (isTimeExceeded(response2)):
+                    RstArray[i] = False
+                    IPArray[i] = response2[IP].src
+                elif (isTimeExceeded(response3)):
+                    RstArray[i] = False
+                    IPArray[i] = response3[IP].src
+                else:
+                    RstArray[i] = False
+            ttl += 1
+            i += 1
+            if ttl > hops:
+                break
+            self.packetQueue = Queue.Queue(100000)
         return (IPArray, RstArray)
 
     def TCPHandshake(self, target, datattl=32):
@@ -218,11 +238,5 @@ class PacketUtils:
         y = response[TCP].seq
         self.send_pkt(flags=0x10, seq=x+1, ack=y)
         self.send_pkt(flags=0x10, seq=x+1, ack=y+1, payload=triggerfetch, ttl=datattl)
-        oop = True
-        while loop:
-            response = self.get_pkt()
-            if (response[TCP].flags == 0x12):
-                self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
-            else:
-                loop = False
+        response = self.get_pkt()
         return (True, response)

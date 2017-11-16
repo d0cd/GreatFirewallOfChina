@@ -19,6 +19,7 @@ PacketUtils	../common.py	/^class PacketUtils:$/;"	kind:class	line:32
 PacketUtils	../common.py~	/^class PacketUtils:$/;"	kind:class	line:32
 RST	../question1_sanity_check.py	/^RST = 0x04$/;"	kind:variable	line:8
 SYN	../question1_sanity_check.py	/^SYN = 0x02$/;"	kind:variable	line:7
+TCPHandshake	../common.py	/^    def TCPHandshake(self, target, datattl=32):$/;"	kind:member	line:211
 UNDERLINE	../question1_sanity_check.py	/^    UNDERLINE = '\\033[4m'$/;"	kind:variable	line:24
 URG	../question1_sanity_check.py	/^URG = 0x20$/;"	kind:variable	line:11
 WARNING	../question1_sanity_check.py	/^    WARNING = '\\033[93m'$/;"	kind:variable	line:20
