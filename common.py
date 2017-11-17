@@ -201,9 +201,10 @@ class PacketUtils:
         self.dst = target
         x = random.randint(1, 31313131)
         self.send_pkt(flags=0x02, seq=x)
+        loop = True
         response = self.get_pkt()
         if response == None:
-            return ([None], [False])
+            return  ([None], [False]8)
         y = response[TCP].seq
         self.send_pkt(flags=0x10, seq=x+1, ack=y)
         ttl = 1
@@ -212,11 +213,15 @@ class PacketUtils:
         i =0
         while True:
             self.send_pkt(payload=triggerfetch, ttl=ttl)
+            self.send_pkt(payload=triggerfetch, ttl=ttl)
+            self.send_pkt(payload=triggerfetch, ttl=ttl)
+            time.sleep(5)
             response1 = self.get_pkt()
-            self.send_pkt(payload=triggerfetch, ttl=ttl)
             response2 = self.get_pkt()
-            self.send_pkt(payload=triggerfetch, ttl=ttl)
             response3 = self.get_pkt()
+            responseLogger(response1)
+            responseLogger(response2)
+            responseLogger(response3)
             if ((response1 != None and isRST(response1)) or (response2 != None and isRST(response2)) or (response3 != None and isRST(response3))):
                 RstArray.append(True)
             if ((response1 != None and isICMP(response1)) or (response2 != None and isICMP(response2)) or (response3 != None and isICMP(response3))):
@@ -231,6 +236,7 @@ class PacketUtils:
                     IPArray.append(response3[IP].src)
                 else:
                     RstArray.append(False)
+            arrayLogger(IPArray)
             ttl += 1
             i += 1
             if ttl > hops:
@@ -238,18 +244,11 @@ class PacketUtils:
             self.packetQueue = Queue.Queue(100000)
         return (IPArray, RstArray)
 
-    def TCPHandshake(self, target, datattl):
-        self.dst = target
-        x = random.randint(1, 31313131)
-        self.send_pkt(flags=0x02, seq=x)
-        response = self.get_pkt()
-        if response == None:
-            return (False, response)
-        response = self.get_pkt()
-        if response == None:
-            return (False, response)
-        y = response[TCP].seq
-        self.send_pkt(flags=0x10, seq=x+1, ack=y)
-        self.send_pkt(flags=0x10, seq=x+1, ack=y+1, payload=triggerfetch, ttl=datattl)
-        response = self.get_pkt()
-        return (True, response)
+def responseLogger(response):
+    if (response != None):
+        logging.debug(response[0].show())
+
+def arrayLogger(array):
+    for i in array:
+        logging.debug("array is :")
+        logging.debug(i)
