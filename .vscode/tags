@@ -15,55 +15,56 @@ HEADER	../question1_sanity_check.py	/^    HEADER = '\\033[95m'$/;"	kind:variable
 OKBLUE	../question1_sanity_check.py	/^    OKBLUE = '\\033[94m'$/;"	kind:variable	line:18
 OKGREEN	../question1_sanity_check.py	/^    OKGREEN = '\\033[92m'$/;"	kind:variable	line:19
 PSH	../question1_sanity_check.py	/^PSH = 0x08$/;"	kind:variable	line:9
-PacketUtils	../common.py	/^class PacketUtils:$/;"	kind:class	line:32
+PacketUtils	../common.py	/^class PacketUtils:$/;"	kind:class	line:33
 PacketUtils	../common.py~	/^class PacketUtils:$/;"	kind:class	line:32
 RST	../question1_sanity_check.py	/^RST = 0x04$/;"	kind:variable	line:8
 SYN	../question1_sanity_check.py	/^SYN = 0x02$/;"	kind:variable	line:7
-TCPHandshake	../common.py	/^    def TCPHandshake(self, target, datattl=32):$/;"	kind:member	line:211
 UNDERLINE	../question1_sanity_check.py	/^    UNDERLINE = '\\033[4m'$/;"	kind:variable	line:24
 URG	../question1_sanity_check.py	/^URG = 0x20$/;"	kind:variable	line:11
 WARNING	../question1_sanity_check.py	/^    WARNING = '\\033[93m'$/;"	kind:variable	line:20
-__init__	../common.py	/^    def __init__(self, dst=None):$/;"	kind:member	line:33
+__init__	../common.py	/^    def __init__(self, dst=None):$/;"	kind:member	line:34
 __init__	../common.py~	/^    def __init__(self, dst=None):$/;"	kind:member	line:33
-arp	../common.py	/^    def arp(self):$/;"	kind:member	line:64
+arp	../common.py	/^    def arp(self):$/;"	kind:member	line:65
 arp	../common.py~	/^    def arp(self):$/;"	kind:member	line:64
+arrayLogger	../common.py	/^def arrayLogger(array):$/;"	kind:function	line:251
 bcolors	../question1_sanity_check.py	/^class bcolors:$/;"	kind:class	line:16
 common.py	../common.py	1;"	kind:file	line:1
 common.py~	../common.py~	1;"	kind:file	line:1
-evade	../common.py	/^    def evade(self, target, msg, ttl):$/;"	kind:member	line:153
+evade	../common.py	/^    def evade(self, target, msg, ttl):$/;"	kind:member	line:154
 evade	../common.py~	/^    def evade(self, target, msg, ttl):$/;"	kind:member	line:153
 evade.py	../evade.py	1;"	kind:file	line:1
-get_pkt	../common.py	/^    def get_pkt(self, timeout=5):$/;"	kind:member	line:121
+get_pkt	../common.py	/^    def get_pkt(self, timeout=5):$/;"	kind:member	line:122
 get_pkt	../common.py~	/^    def get_pkt(self, timeout=5):$/;"	kind:member	line:121
 interfaces	../interfaces.py	/^def interfaces():$/;"	kind:function	line:10
 interfaces	../interfaces.py~	/^def interfaces():$/;"	kind:function	line:10
 interfaces.py	../interfaces.py	1;"	kind:file	line:1
 interfaces.py~	../interfaces.py~	1;"	kind:file	line:1
-isICMP	../common.py	/^def isICMP(p):$/;"	kind:function	line:23
+isICMP	../common.py	/^def isICMP(p):$/;"	kind:function	line:24
 isICMP	../common.py~	/^def isICMP(p):$/;"	kind:function	line:23
-isRST	../common.py	/^def isRST(p):$/;"	kind:function	line:20
+isRST	../common.py	/^def isRST(p):$/;"	kind:function	line:21
 isRST	../common.py~	/^def isRST(p):$/;"	kind:function	line:20
-isTimeExceeded	../common.py	/^def isTimeExceeded(p):$/;"	kind:function	line:26
+isTimeExceeded	../common.py	/^def isTimeExceeded(p):$/;"	kind:function	line:27
 isTimeExceeded	../common.py~	/^def isTimeExceeded(p):$/;"	kind:function	line:26
 main	../question1_sanity_check.py	/^def main(pcap_file):$/;"	kind:function	line:29
-maxhop	../common.py	/^maxhop = 25$/;"	kind:variable	line:12
+maxhop	../common.py	/^maxhop = 25$/;"	kind:variable	line:13
 maxhop	../common.py~	/^maxhop = 25$/;"	kind:variable	line:12
 msg	../evade.py	/^    msg = open("msg.txt").read()$/;"	kind:variable	line:9
 myip	../evade.py	/^    myip = None$/;"	kind:variable	line:11
 myip	../ping.py	/^    myip = None$/;"	kind:variable	line:12
 myip	../traceroute.py	/^    myip = None$/;"	kind:variable	line:20
-ping	../common.py	/^    def ping(self, target):$/;"	kind:member	line:159
+ping	../common.py	/^    def ping(self, target):$/;"	kind:member	line:160
 ping	../common.py~	/^    def ping(self, target):$/;"	kind:member	line:159
 ping.py	../ping.py	1;"	kind:file	line:1
 print_tr	../traceroute.py	/^def print_tr(path, status):$/;"	kind:function	line:6
 question1_sanity_check.py	../question1_sanity_check.py	1;"	kind:file	line:1
 res	../evade.py	/^    res = tr.evade(target, msg, int(sys.argv[1]))$/;"	kind:variable	line:18
 res	../traceroute.py	/^    res = tr.traceroute(target, 24)$/;"	kind:variable	line:27
-run_sniffer	../common.py	/^    def run_sniffer(self):$/;"	kind:member	line:138
+responseLogger	../common.py	/^def responseLogger(response):$/;"	kind:function	line:247
+run_sniffer	../common.py	/^    def run_sniffer(self):$/;"	kind:member	line:139
 run_sniffer	../common.py~	/^    def run_sniffer(self):$/;"	kind:member	line:138
-send_pkt	../common.py	/^    def send_pkt(self, payload=None, ttl=32, flags="",$/;"	kind:member	line:86
+send_pkt	../common.py	/^    def send_pkt(self, payload=None, ttl=32, flags="",$/;"	kind:member	line:87
 send_pkt	../common.py~	/^    def send_pkt(self, payload=None, ttl=32, flags="",$/;"	kind:member	line:86
-sniffer	../common.py	/^    def sniffer(self, packet):$/;"	kind:member	line:128
+sniffer	../common.py	/^    def sniffer(self, packet):$/;"	kind:member	line:129
 sniffer	../common.py~	/^    def sniffer(self, packet):$/;"	kind:member	line:128
 str_ERROR	../question1_sanity_check.py	/^str_ERROR = bcolors.FAIL + 'ERROR' + bcolors.ENDC$/;"	kind:variable	line:27
 str_OK	../question1_sanity_check.py	/^str_OK = bcolors.OKGREEN + 'OK' + bcolors.ENDC$/;"	kind:variable	line:26
@@ -76,7 +77,7 @@ target	../traceroute.py	/^    target = "202.106.121.6"$/;"	kind:variable	line:18
 tr	../evade.py	/^    tr = common.PacketUtils(dst=target)$/;"	kind:variable	line:17
 tr	../ping.py	/^    tr = common.PacketUtils(dst=target)$/;"	kind:variable	line:18
 tr	../traceroute.py	/^    tr = common.PacketUtils(dst=target)$/;"	kind:variable	line:26
-traceroute	../common.py	/^    def traceroute(self, target, hops):$/;"	kind:member	line:194
+traceroute	../common.py	/^    def traceroute(self, target, hops):$/;"	kind:member	line:200
 traceroute	../common.py~	/^    def traceroute(self, target, hops):$/;"	kind:member	line:169
 traceroute.py	../traceroute.py	1;"	kind:file	line:1
-triggerfetch	../common.py	/^triggerfetch = "GET \/ HTTP\/1.0\\nHost: www.google.com\\n\\n"$/;"	kind:variable	line:17
+triggerfetch	../common.py	/^triggerfetch = "GET \/ HTTP\/1.0\\nHost: www.google.com\\n\\n"$/;"	kind:variable	line:18

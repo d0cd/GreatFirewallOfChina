@@ -204,7 +204,7 @@ class PacketUtils:
         loop = True
         response = self.get_pkt()
         if response == None:
-            return  ([None], [False]8)
+            return  ([None], [False])
         y = response[TCP].seq
         self.send_pkt(flags=0x10, seq=x+1, ack=y)
         ttl = 1
