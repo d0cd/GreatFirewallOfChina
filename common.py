@@ -198,6 +198,7 @@ class PacketUtils:
     # Empty queue after every hop
 
     def traceroute(self, target, hops):
+        logging.basicConfig(level=logging.DEBUG)
         self.dst = target
         x = random.randint(1, 31313131)
         self.send_pkt(flags=0x02, seq=x)
@@ -212,33 +213,54 @@ class PacketUtils:
         IPArray = []
         i =0
         while True:
-            self.send_pkt(payload=triggerfetch, ttl=ttl)
-            self.send_pkt(payload=triggerfetch, ttl=ttl)
-            self.send_pkt(payload=triggerfetch, ttl=ttl)
+            x = random.randint(1, 31313131)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq =x)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x)
             time.sleep(5)
-            response1 = self.get_pkt()
-            response2 = self.get_pkt()
-            response3 = self.get_pkt()
-            responseLogger(response1)
-            responseLogger(response2)
-            responseLogger(response3)
-            if ((response1 != None and isRST(response1)) or (response2 != None and isRST(response2)) or (response3 != None and isRST(response3))):
+            logging.debug('handshake done')
+            while self.packetQueue.not_empty:
+                response = self.get_pkt()
+                # responseLogger(response)
+                if response == None:
+                    continue
+                else: responseLogger(response)
+                if  response[IP].ack == x:
+                    logging.debug("found correct response")
+                    responseLogger(response)
+                    break
+            # response1 = self.get_pkt()
+            # response2 = self.get_pkt()
+            # response3 = self.get_pkt()
+            # responseLogger(response1)
+            # responseLogger(response2)
+            # responseLogger(response3)
+            responseLogger(response)
+            # if ((response1 != None and isRST(response1)) or (response2 != None and isRST(response2)) or (response3 != None and isRST(response3))):
+            #     RstArray.append(True)
+            # if ((response1 != None and isICMP(response1)) or (response2 != None and isICMP(response2)) or (response3 != None and isICMP(response3))):
+            #     if(response1 != None and isTimeExceeded(response1)):
+            #         RstArray.append(False)
+            #         IPArray.append(response1[IP].src)
+            #     elif (response2 != None and isTimeExceeded(response2)):
+            #         RstArray.append(False)
+            #         IPArray.append(response2[IP].src)
+            #     elif (response2 != None and isTimeExceeded(response3)):
+            #         RstArray.append(False)
+            #         IPArray.append(response3[IP].src)
+            #     else:
+            #         RstArray.append(False)
+            if(isRST(response)):
                 RstArray.append(True)
-            if ((response1 != None and isICMP(response1)) or (response2 != None and isICMP(response2)) or (response3 != None and isICMP(response3))):
-                if(response1 != None and isTimeExceeded(response1)):
-                    RstArray.append(False)
-                    IPArray.append(response1[IP].src)
-                elif (response2 != None and isTimeExceeded(response2)):
-                    RstArray.append(False)
-                    IPArray.append(response2[IP].src)
-                elif (response2 != None and isTimeExceeded(response3)):
-                    RstArray.append(False)
-                    IPArray.append(response3[IP].src)
-                else:
-                    RstArray.append(False)
+            if isTimeExceeded(response):
+                RstArray.append(False)
+                IPArray.append(response[IP].src)
+            else:
+                RstArray.append(True)
             arrayLogger(IPArray)
             ttl += 1
             i += 1
+            logging.debug(ttl)
             if ttl > hops:
                 break
             self.packetQueue = Queue.Queue(100000)
@@ -247,6 +269,7 @@ class PacketUtils:
 def responseLogger(response):
     if (response != None):
         logging.debug(response[0].show())
+    else: logging.debug('None')
 
 def arrayLogger(array):
     for i in array:
