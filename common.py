@@ -199,36 +199,41 @@ class PacketUtils:
 
     def traceroute(self, target, hops):
         logging.basicConfig(level=logging.DEBUG)
+        sprc = random.randint(2000, 30000)
         self.dst = target
         x = random.randint(1, 31313131)
-        self.send_pkt(flags=0x02, seq=x)
+        self.send_pkt(flags=0x02, seq=x, sport = sprc)
         loop = True
         response = self.get_pkt()
         if response == None:
             return  ([None], [False])
         y = response[TCP].seq
-        self.send_pkt(flags=0x10, seq=x+1, ack=y)
+        logging.debug(y)
+        responseLogger(response)
+        self.send_pkt(flags=0x10, seq=x+1, ack=y, sport=sprc)
+        logging.debug('handshake done')
+        response = self.get_pkt()
+        responseLogger(response)
         ttl = 1
         RstArray = []
         IPArray = []
         i =0
         while True:
             x = random.randint(1, 31313131)
-            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x)
-            self.send_pkt(payload=triggerfetch, ttl=ttl, seq =x)
-            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x, sport=sprc, flags=0x10)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq =x, sport=sprc, flags=0x10)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x, sport=sprc, flags=0x10)
             time.sleep(5)
-            logging.debug('handshake done')
-            while self.packetQueue.not_empty:
+            loop = True
+            while loop:
                 response = self.get_pkt()
                 # responseLogger(response)
                 if response == None:
                     continue
-                else: responseLogger(response)
-                if  response[IP].ack == x:
+                if  isTimeExceeded(response) or isRST(response):
                     logging.debug("found correct response")
                     responseLogger(response)
-                    break
+                    loop = False
             # response1 = self.get_pkt()
             # response2 = self.get_pkt()
             # response3 = self.get_pkt()
@@ -252,11 +257,13 @@ class PacketUtils:
             #         RstArray.append(False)
             if(isRST(response)):
                 RstArray.append(True)
+                IPArray.append(None)
             if isTimeExceeded(response):
                 RstArray.append(False)
                 IPArray.append(response[IP].src)
             else:
-                RstArray.append(True)
+                RstArray.append(False)
+                IPArray.append
             arrayLogger(IPArray)
             ttl += 1
             i += 1
@@ -272,6 +279,9 @@ def responseLogger(response):
     else: logging.debug('None')
 
 def arrayLogger(array):
+    logging.debug("array is: ")
     for i in array:
-        logging.debug("array is :")
-        logging.debug(i)
+        if i== None:
+            logging.debug("None")
+        else:
+            logging.debug(i)
