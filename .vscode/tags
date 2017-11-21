@@ -26,10 +26,11 @@ __init__	../common.py	/^    def __init__(self, dst=None):$/;"	kind:member	line:3
 __init__	../common.py~	/^    def __init__(self, dst=None):$/;"	kind:member	line:33
 arp	../common.py	/^    def arp(self):$/;"	kind:member	line:65
 arp	../common.py~	/^    def arp(self):$/;"	kind:member	line:64
-arrayLogger	../common.py	/^def arrayLogger(array):$/;"	kind:function	line:251
+arrayLogger	../common.py	/^def arrayLogger(array):$/;"	kind:function	line:287
 bcolors	../question1_sanity_check.py	/^class bcolors:$/;"	kind:class	line:16
 common.py	../common.py	1;"	kind:file	line:1
 common.py~	../common.py~	1;"	kind:file	line:1
+createHandshake	../common.py	/^    def createHandshake(self,target, sport = None, seq=None, ack=None):$/;"	kind:member	line:266
 evade	../common.py	/^    def evade(self, target, msg, ttl):$/;"	kind:member	line:154
 evade	../common.py~	/^    def evade(self, target, msg, ttl):$/;"	kind:member	line:153
 evade.py	../evade.py	1;"	kind:file	line:1
@@ -59,7 +60,7 @@ print_tr	../traceroute.py	/^def print_tr(path, status):$/;"	kind:function	line:6
 question1_sanity_check.py	../question1_sanity_check.py	1;"	kind:file	line:1
 res	../evade.py	/^    res = tr.evade(target, msg, int(sys.argv[1]))$/;"	kind:variable	line:18
 res	../traceroute.py	/^    res = tr.traceroute(target, 24)$/;"	kind:variable	line:27
-responseLogger	../common.py	/^def responseLogger(response):$/;"	kind:function	line:247
+responseLogger	../common.py	/^def responseLogger(response):$/;"	kind:function	line:282
 run_sniffer	../common.py	/^    def run_sniffer(self):$/;"	kind:member	line:139
 run_sniffer	../common.py~	/^    def run_sniffer(self):$/;"	kind:member	line:138
 send_pkt	../common.py	/^    def send_pkt(self, payload=None, ttl=32, flags="",$/;"	kind:member	line:87
@@ -73,7 +74,7 @@ target	../evade.py	/^    target = "202.106.121.6"$/;"	kind:variable	line:8
 target	../ping.py	/^        target = sys.argv[1]$/;"	kind:variable	line:16
 target	../ping.py	/^    target = "202.106.121.6"$/;"	kind:variable	line:9
 target	../traceroute.py	/^        target = sys.argv[1]$/;"	kind:variable	line:24
-target	../traceroute.py	/^    target = "202.106.121.6"$/;"	kind:variable	line:18
+target	../traceroute.py	/^    target = "172.217.11.164"$/;"	kind:variable	line:19
 tr	../evade.py	/^    tr = common.PacketUtils(dst=target)$/;"	kind:variable	line:17
 tr	../ping.py	/^    tr = common.PacketUtils(dst=target)$/;"	kind:variable	line:18
 tr	../traceroute.py	/^    tr = common.PacketUtils(dst=target)$/;"	kind:variable	line:26
