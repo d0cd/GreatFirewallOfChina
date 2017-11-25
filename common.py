@@ -151,7 +151,44 @@ class PacketUtils:
     # ttl is a ttl which triggers the Great Firewall but is before the
     # server itself (from a previous traceroute incantation
     def evade(self, target, msg, ttl):
-        return "NEED TO IMPLEMENT"
+        srcp = random.randint(2000, 30000)
+        x = random.randint(1, 31313131)
+        self.dst = target
+        # Send TCP SYN
+        self.send_pkt(flags=0x02, sport=srcp, seq=x)
+        # Wait for response
+        response = self.get_pkt()
+        y = response[TCP].seq
+        #Send ACK back
+        self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
+        #Send data
+        ipid = self.idcount
+        self.idcount += 1
+        ip = IP(src=self.src,
+                dst=self.dst,
+                id=ipid,
+                ttl=32)
+                
+        t = TCP(sport=srcp,
+                dport=80,
+                flags=0x10,
+                 seq=x+1,
+                 ack=y+1)
+
+        p = ip/t/msg
+        p.show()
+        packets = fragment(p, fragsize=2)
+        for p in packets:
+            p.show()
+            e = Ether(dst=self.etherdst,
+                  type=0x0800)
+            # Have to send as Ethernet to avoid interface issues
+            sendp([e/p], verbose=1, iface=self.iface)
+            # Limit to 20 PPS.
+            time.sleep(.05)
+
+        while True:
+            print(self.get_pkt())    
         
     # Returns "DEAD" if server isn't alive,
     # "LIVE" if teh server is alive,
@@ -162,6 +199,7 @@ class PacketUtils:
         self.dst = target
         # Send TCP SYN
         self.send_pkt(flags=0x02, sport=srcp, seq=x)
+        print("Sent SYN")
         # Wait for response
         response = self.get_pkt()
         if response == None:
@@ -169,21 +207,21 @@ class PacketUtils:
         # Send TCP ACK
         y = response[TCP].seq
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
+        print("Sent ACK")
         # Send payload
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
         # Wait for response
-        loop = True
-        while loop:
-            response = self.get_pkt()
-            if (response[TCP].flags == 0x12):
-                self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
-            else:
-                loop = False
-        if isRST(response):
-            return "FIREWALL"
-        else:
-            print(response[TCP].flags == 0x12)
-            return "LIVE" #Do we need to check the response packet for a valid response?
+        response, count = self.get_pkt(), 3 # makes 3 more requests to get_pkt()
+        while count > 0:
+            if response != None:
+                if isRST(response):
+                    return "FIREWALL"
+                if (TCP in p) and (p[TCP].flags == 0x10):
+                    return "LIVE" #Do we need to check the response packet for a valid response?
+                if (TCP in p) and (p[TCP].flags == 0x12):
+                    return "SYN+ACK again; GFC might be punishing you"
+            reponse, count = self.get_pkt(), count - 1
+
 
     # Format is
     # ([], [])
