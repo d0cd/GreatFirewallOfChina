@@ -8,6 +8,7 @@ import socket
 import json
 import Queue
 import interfaces
+import logging
 
 maxhop = 25
 
@@ -229,5 +230,96 @@ class PacketUtils:
     # or none if none
     # The second list is T/F 
     # if there is a RST back for that particular request
+
+    #start with ttl 1. increment till hops
+    # USE TCP Handshake, if any of the responses are an RST or timeExpired second array is true
+    # Empty queue after every hop
+
     def traceroute(self, target, hops):
-        return "NEED TO IMPLEMENT"
+        logging.basicConfig(level=logging.DEBUG)
+        sprc = random.randint(2000, 30000)
+        self.dst = target
+        x = random.randint(1, 31313131)
+        self.send_pkt(flags=0x02, seq=x, sport = sprc)
+        loop = True
+        response = self.get_pkt()
+        if response == None:
+            return  ([None], [False])
+        y = response[TCP].seq
+        logging.debug(y)
+        responseLogger(response)
+        self.send_pkt(flags=0x10, seq=x+1, ack=y, sport=sprc)
+        logging.debug('handshake done')
+        response = self.get_pkt()
+        responseLogger(response)
+        ttl = 1
+        RstArray = []
+        IPArray = []
+        i =0
+        while True:
+            x = random.randint(1, 31313131)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x, sport=sprc, flags=0x10)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq =x, sport=sprc, flags=0x10)
+            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x, sport=sprc, flags=0x10)
+            time.sleep(5)
+            loop = True
+            while loop:
+                response = self.get_pkt()
+                # responseLogger(response)
+                if response == None:
+                    continue
+                if  isTimeExceeded(response) or isRST(response):
+                    logging.debug("found correct response")
+                    responseLogger(response)
+                    loop = False
+            # response1 = self.get_pkt()
+            # response2 = self.get_pkt()
+            # response3 = self.get_pkt()
+            # responseLogger(response1)
+            # responseLogger(response2)
+            # responseLogger(response3)
+            responseLogger(response)
+            # if ((response1 != None and isRST(response1)) or (response2 != None and isRST(response2)) or (response3 != None and isRST(response3))):
+            #     RstArray.append(True)
+            # if ((response1 != None and isICMP(response1)) or (response2 != None and isICMP(response2)) or (response3 != None and isICMP(response3))):
+            #     if(response1 != None and isTimeExceeded(response1)):
+            #         RstArray.append(False)
+            #         IPArray.append(response1[IP].src)
+            #     elif (response2 != None and isTimeExceeded(response2)):
+            #         RstArray.append(False)
+            #         IPArray.append(response2[IP].src)
+            #     elif (response2 != None and isTimeExceeded(response3)):
+            #         RstArray.append(False)
+            #         IPArray.append(response3[IP].src)
+            #     else:
+            #         RstArray.append(False)
+            if(isRST(response)):
+                RstArray.append(True)
+                IPArray.append(None)
+            if isTimeExceeded(response):
+                RstArray.append(False)
+                IPArray.append(response[IP].src)
+            else:
+                RstArray.append(False)
+                IPArray.append
+            arrayLogger(IPArray)
+            ttl += 1
+            i += 1
+            logging.debug(ttl)
+            if ttl > hops:
+                break
+            self.packetQueue = Queue.Queue(100000)
+        return (IPArray, RstArray)
+
+def responseLogger(response):
+    if (response != None):
+        logging.debug(response[0].show())
+    else: logging.debug('None')
+
+def arrayLogger(array):
+    logging.debug("array is: ")
+    for i in array:
+        if i== None:
+            logging.debug("None")
+        else:
+            logging.debug(i)
