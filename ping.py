@@ -6,8 +6,9 @@ import common
 
 if __name__ == '__main__':
     # www.miit.gov.cn
-    target = "202.106.121.6"
-    # target = "74.125.224.72"
+    #target = "202.106.121.6" #MIIT
+    # target = "74.125.224.72" #Google
+    target = "34.228.54.77" #Test server
 
     myip = None
     if len(sys.argv) < 2:

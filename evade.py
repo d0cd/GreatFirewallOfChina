@@ -15,7 +15,7 @@ if __name__ == '__main__':
         target = sys.argv[2]
 
     tr = common.PacketUtils(dst=target)
-    res = tr.evade(target, msg, int(sys.argv[1]))
+    res = tr.evade(target, msg, 20)
     print res
     
 
