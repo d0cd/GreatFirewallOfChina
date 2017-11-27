@@ -16,7 +16,7 @@ maxhop = 25
 # the web server to process the connection.  You probably want it here
 
 triggerfetch = "GET / HTTP/1.0\nHost: www.google.com\n\n"
-
+triggerfetch = "GET /search?q=Falun+Gong HTTP/1.1\nHost: www.google.com\n\n"
 # A couple useful functions that take scapy packets
 def isRST(p):
     return (TCP in p) and (p[IP][TCP].flags & 0x4 != 0)
@@ -163,33 +163,26 @@ class PacketUtils:
         #Send ACK back
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
         #Send data
-        ipid = self.idcount
-        self.idcount += 1
-        ip = IP(src=self.src,
-                dst=self.dst,
-                id=ipid,
-                ttl=32)
-                
-        t = TCP(sport=srcp,
-                dport=80,
-                flags=0x10,
-                 seq=x+1,
-                 ack=y+1)
-
-        p = ip/t/msg
-        p.show()
-        packets = fragment(p, fragsize=2)
-        for p in packets:
-            p.show()
-            e = Ether(dst=self.etherdst,
-                  type=0x0800)
-            # Have to send as Ethernet to avoid interface issues
-            sendp([e/p], verbose=1, iface=self.iface)
-            # Limit to 20 PPS.
-            time.sleep(.05)
-
-        while True:
-            print(self.get_pkt())    
+        split_msg = list(bytearray(msg))
+        print(len(split_msg))
+        for b in msg:
+            self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=b)
+            x += 1
+        time.sleep(5)
+        packet_count, rst_count = 0, 0
+        while not self.packetQueue.empty():
+            p = self.get_pkt()
+            if 'Raw' in p:
+                print(p['Raw'])
+            if isRST(p):
+                rst_count += 1
+            packet_count += 1
+        if rst_count > 0:
+            return "FIREWALL"
+        elif packet_count > 0:
+            return "LIVE"
+        else:
+            return "NO RESPONSE RECIEVED"
         
     # Returns "DEAD" if server isn't alive,
     # "LIVE" if teh server is alive,
@@ -212,16 +205,20 @@ class PacketUtils:
         # Send payload
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
         # Wait for response
-        response, count = self.get_pkt(), 3 # makes 3 more requests to get_pkt()
-        while count > 0:
-            if response != None:
-                if isRST(response):
-                    return "FIREWALL"
-                if (TCP in p) and (p[TCP].flags == 0x10):
-                    return "LIVE" #Do we need to check the response packet for a valid response?
-                if (TCP in p) and (p[TCP].flags == 0x12):
-                    return "SYN+ACK again; GFC might be punishing you"
-            reponse, count = self.get_pkt(), count - 1
+        time.sleep(5)
+        packet_count, rst_count = 0, 0
+        while not self.packetQueue.empty():
+            p = self.get_pkt()
+            if isRST(p):
+                rst_count += 1
+            packet_count += 1
+        if rst_count > 0:
+            return "FIREWALL"
+        elif packet_count > 0:
+            return "LIVE"
+        else:
+            return "NO RESPONSE RECIEVED"
+    
 
 
     # Format is
