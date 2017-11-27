@@ -15,8 +15,8 @@ def print_tr(path, status):
     
 if __name__ == '__main__':
     # www.miit.gov.cn                                                           
-    target = "202.106.121.6"
-
+    # target = "202.106.121.6"
+    target = "172.217.11.164"
     myip = None
     if len(sys.argv) < 2:
         pass
