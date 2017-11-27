@@ -1,18 +1,6 @@
-404 Response:
+What is the TTL of the real replies from the server:  94
 
-telnet www.miit.gov.cn 80
-GET /cryptorules HTTP/1.1
-Host: www.yunbi.com
-
-RST Response:
-
-telnet www.miit.gov.cn 80
-GET /search?q=Falun+Gong HTTP/1.1 
-Host: www.google.com
-
-What is the TTL of the real replies from the server:  110
-
-What is the TTL of the injected packets from the Great Firewall:  125
+What is the TTL of the injected packets from the Great Firewall:  50
 
 How many RST packets did the Great Firewall inject:  3
 
