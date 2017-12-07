@@ -1,2 +1,28 @@
 Describe (in 2-3 paragraphs) your evasion strategy:
 
+One observation we have to make is that the GFC is an 'on-path firewall" which implies 
+that there exists at least one hop between the server you are trying to reach and the firewall itself.
+Using a function call to "traceroute", we are able to determine the exact number of hops it takes to reliably
+trigger the GFC. If we send a packet to the recipient with a ttl equivalent to the calculated number of 
+hops, the packet would die before reaching the destination (because the ttl would reach 0). Therefore, 
+we observe that if we sent two packets - one with a large ttl and the other with a ttl that would trigger the 
+GFC and expire before reaching the destination, only one packet would reach the destination, but the 
+GFC would see two packets. We must also note that TCP functions as a data stream. In other words, data can be split over 
+multiple packets; as long as the sequence numbers are correct, the data will be correctly reassmbled 
+at the destination. 
+
+The evasion strategy takes advantage of the above observations to get messages to the destination 
+without the GFC interfering with communication. First we split the message into "one character chunks". For 
+every chunk, we send two copies - one with a short ttl and one with a long ttl. By doing so, the GFC
+sees two copies of each character whereas the destination only sees one copy. 
+
+    Ex. google.com would be shown as ggooooggllee..ccoomm to the GFC
+
+Splitting the message, prevents the GFC from string matching on individual packets. If the GFC 
+reassembled packets, sending two copies would prevent it from string matching properly; however,
+the packets with the short ttl would die before reaching the destination, ensuring that the recipient has
+the correct copy of the message. 
+    
+Althought we employed both techniques, it is important to note that, even without sending two copies 
+of each character, splitting the message was able to work with acceptable degrees of success 
+in testing.

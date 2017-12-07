@@ -1,0 +1,7 @@
+This project was quite difficult but overall very interesting
+I like how it was very practical; it makes for good experience
+Specifically, some of the hardest things were setting up the VM
+and dealing with network issues. I think that in order to improve
+the project, there should be a clear listing of what expected output
+should be and a very detailed explaination on what is expected and what
+situations we don't have to handle.

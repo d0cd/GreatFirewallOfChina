@@ -15,8 +15,7 @@ maxhop = 25
 # A request that will trigger the great firewall but will NOT cause
 # the web server to process the connection.  You probably want it here
 
-triggerfetch = "GET / HTTP/1.0\nHost: www.google.com\n\n"
-triggerfetch = "GET /search?q=Falun+Gong HTTP/1.1\nHost: www.google.com\n\n"
+triggerfetch = "GET /search?Falun+gong HTTP/1.0\nHost: www.google.com\n\n"
 # A couple useful functions that take scapy packets
 def isRST(p):
     return (TCP in p) and (p[IP][TCP].flags & 0x4 != 0)
@@ -159,6 +158,9 @@ class PacketUtils:
         self.send_pkt(flags=0x02, sport=srcp, seq=x)
         # Wait for response
         response = self.get_pkt()
+        while response == None or TCP not in response or response[TCP].flags != 0x12:
+            self.send_pkt(flags=0x02, sport=srcp, seq=x)
+            response = self.get_pkt()
         y = response[TCP].seq
         #Send ACK back
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
@@ -166,23 +168,19 @@ class PacketUtils:
         split_msg = list(bytearray(msg))
         print(len(split_msg))
         for b in msg:
+            self.send_pkt(flags=0x10, ttl=ttl, sport=srcp, seq=x+1, ack=y+1, payload=b)
             self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=b)
             x += 1
-        time.sleep(5)
-        packet_count, rst_count = 0, 0
+        time.sleep(10)
+        payloads = []
         while not self.packetQueue.empty():
             p = self.get_pkt()
             if 'Raw' in p:
-                print(p['Raw'])
-            if isRST(p):
-                rst_count += 1
-            packet_count += 1
-        if rst_count > 0:
-            return "FIREWALL"
-        elif packet_count > 0:
-            return "LIVE"
-        else:
-            return "NO RESPONSE RECIEVED"
+                payloads.append(p['Raw'].load)
+                y = response[TCP].seq
+        #End the connection        
+        self.send_pkt(flags=0x04, sport=srcp, seq=x+1, ack=y+1)
+        return payloads    
         
     # Returns "DEAD" if server isn't alive,
     # "LIVE" if teh server is alive,
@@ -193,15 +191,13 @@ class PacketUtils:
         self.dst = target
         # Send TCP SYN
         self.send_pkt(flags=0x02, sport=srcp, seq=x)
-        print("Sent SYN")
         # Wait for response
-        response = self.get_pkt()
+        response = self.get_pkt(10)
         if response == None:
             return "DEAD"
         # Send TCP ACK
         y = response[TCP].seq
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
-        print("Sent ACK")
         # Send payload
         self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
         # Wait for response
@@ -233,77 +229,41 @@ class PacketUtils:
     # Empty queue after every hop
 
     def traceroute(self, target, hops):
-        logging.basicConfig(level=logging.DEBUG)
-        response = self.createHandshake(target, )
-        logging.debug('handshake done')
-        responseLogger(response)
-        ttl = 1
-        RstArray = []
-        IPArray = []
-        i =0
-        self.packetQueue =Queue.Queue(100000)
-        y = response[TCP].seq
-        x = response[TCP].ack
-        while True:
-            sprc = random.randint(2000, 30000)
-            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x, ack = y, sport=sprc, flags="PA")
-            self.send_pkt(payload=triggerfetch, ttl=ttl, seq =x, sport=sprc,ack = y, flags="PA")
-            self.send_pkt(payload=triggerfetch, ttl=ttl, seq=x, sport=sprc,ack=y, flags="PA")
-            # loop = True
-            # while loop:
-            #     response = self.get_pkt(timeout=1)
-            #     # responseLogger(response)
-            #     if response == None:
-            #         continue
-            #     if  isTimeExceeded(response) or isRST(response) or response != None:
-            #         logging.debug("found correct response")
-            #         responseLogger(response)
-            #         loop = False
-            response = self.get_pkt()
-            logging.debug("response made")
-            while response == None:
-                logging.debug("in loop")
-                response = self.get_pkt()
-                responseLogger(response)
-            logging.debug("no none response")
-            responseLogger(response)
-            if(isRST(response)):
-                RstArray.append(True)
-                IPArray.append(None)
-                response = self.createHandshake(target)
-            else if isTimeExceeded(response):
-                RstArray.append(False)
-                IPArray.append(response[IP].src)
-            else:
-                RstArray.append(False)
-                IPArray.append
-            y = response[TCP].seq
-            x = response[TCP].ack
-            arrayLogger(IPArray)
-            ttl += 1
-            i += 1
-            logging.debug(ttl)
-            if ttl > hops:
-                break
-            self.packetQueue = Queue.Queue(100000)
-            logging.debug(self.packetQueue.empty())
-
-        return (IPArray, RstArray)
-
-    def createHandshake(self,target, sport = None, seq=None, ack=None):
+        test_ttl = 1
+      
         self.dst = target
-        if sport == None:
-            sport = random.randint(2000, 30000)
-        if seq == None:
-            seq = random.randint(1, 31313131)
-        self.send_pkt(sport=sport, seq=seq, flags=0x02)
-        time.sleep(5)
-        response = self.get_pkt()
-        y=response[TCP].seq
-        self.send_pkt(flags=0x10, sport=sport, seq=x+1, ack=y)
-        time.sleep(5)
-        response = self.get_pkt()
-        return response
+        IPArray, RSTArray = [None] * hops, [False] * hops
+        
+        while test_ttl <= hops:
+            # Empty packetQueue
+            srcp = random.randint(2000, 30000)
+            x = random.randint(1, 31313131)    
+            self.send_pkt(flags=0x02, sport=srcp, seq=x)
+            # Wait for response
+            response = self.get_pkt()
+            while response == None or TCP not in response or response[TCP].flags != 0x12:
+                self.send_pkt(flags=0x02, sport=srcp, seq=x)
+                response = self.get_pkt(timeout=3)
+            # Send TCP ACK
+            y = response[TCP].seq
+            self.send_pkt(flags=0x10, sport=srcp, seq=x+1, ack=y+1)
+            # Send payload 3 times
+            self.send_pkt(flags=0x10, ttl=test_ttl, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
+            self.send_pkt(flags=0x10, ttl=test_ttl, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
+            self.send_pkt(flags=0x10, ttl=test_ttl, sport=srcp, seq=x+1, ack=y+1, payload=triggerfetch)
+            # Check for RST or ICMP
+            while not self.packetQueue.empty():
+                p = self.get_pkt()
+                if isTimeExceeded(p): 
+                    IPArray[test_ttl - 1] = p[IP].src
+                    #RSTArray.append(False)
+                if isRST(p):
+                    #IPArray.append(p[IP].src)
+                    RSTArray[test_ttl - 1] = True
+            test_ttl += 1
+            while not self.packetQueue.empty():
+                p = self.get_pkt()
+        return (IPArray, RSTArray)
 
 
 def responseLogger(response):
